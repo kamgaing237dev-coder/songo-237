@@ -9,6 +9,7 @@ let gameState = createGame('south');
  * Initialize the game board display
  */
 function initializeBoard() {
+  console.log('Initializing board...', gameState);
   renderBoard();
   updateGameInfo();
   updateMoveLog();
@@ -18,6 +19,7 @@ function initializeBoard() {
  * Render the game board (both players' pits)
  */
 function renderBoard() {
+  console.log('Rendering board...');
   renderPlayerPits('north');
   renderPlayerPits('south');
 }
@@ -26,11 +28,15 @@ function renderBoard() {
  * Render pits for a specific player
  */
 function renderPlayerPits(player) {
+  console.log(`Rendering ${player} pits...`);
   const container = document.getElementById(player + 'Pits');
   container.innerHTML = '';
   
   const board = gameState.board[player];
+  console.log(`${player} board:`, board);
+  
   const legalMoves = getLegalMoves(gameState);
+  console.log('Legal moves:', legalMoves);
   
   for (let i = 0; i < board.length; i++) {
     const pit = document.createElement('div');
@@ -43,9 +49,15 @@ function renderPlayerPits(player) {
     const isLegal = gameState.currentPlayer === player && 
                     legalMoves.some(move => move.pitIndex === i);
     
+    console.log(`Pit ${player}[${i}]: numbers=${numbers}, isLegal=${isLegal}`);
+    
     if (isLegal) {
       pit.classList.add('legal');
-      pit.onclick = () => makeMove(player, i);
+      pit.style.cursor = 'pointer';
+      pit.onclick = () => {
+        console.log(`Clicked pit: ${player}[${i}]`);
+        makeMove(player, i);
+      };
     } else if (numbers === 0) {
       pit.classList.add('empty');
     } else if (gameState.currentPlayer !== player) {
@@ -60,21 +72,33 @@ function renderPlayerPits(player) {
  * Make a move
  */
 function makeMove(player, pitIndex) {
+  console.log(`Making move: ${player}[${pitIndex}]`);
+  console.log('Current game state:', gameState);
+  
   const move = { player, pitIndex };
-  const result = applyMove(gameState, move);
+  console.log('Move object:', move);
   
-  if (!result.ok) {
-    alert('Invalid move: ' + result.error);
-    return;
-  }
-  
-  renderBoard();
-  updateGameInfo();
-  updateMoveLog();
-  
-  // Check if game ended
-  if (gameState.status === STATUS.ENDED) {
-    showGameOver();
+  try {
+    const result = applyMove(gameState, move);
+    console.log('Move result:', result);
+    
+    if (!result.ok) {
+      console.error('Invalid move:', result.error);
+      alert('Invalid move: ' + result.error);
+      return;
+    }
+    
+    renderBoard();
+    updateGameInfo();
+    updateMoveLog();
+    
+    // Check if game ended
+    if (gameState.status === STATUS.ENDED) {
+      showGameOver();
+    }
+  } catch (error) {
+    console.error('Error during move:', error);
+    alert('Error: ' + error.message);
   }
 }
 
@@ -156,4 +180,7 @@ function resetGame() {
 }
 
 // Initialize on page load
-window.addEventListener('DOMContentLoaded', initializeBoard);
+window.addEventListener('DOMContentLoaded', () => {
+  console.log('Page loaded, initializing game...');
+  initializeBoard();
+});
