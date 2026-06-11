@@ -51,9 +51,9 @@ function renderPlayerPits(player) {
     } else if (gameState.currentPlayer !== player) {
       pit.classList.add('disabled');
     }
+    
+    container.appendChild(pit);
   }
-  
-  container.appendChild(...container.children);
 }
 
 /**
